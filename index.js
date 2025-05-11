@@ -169,6 +169,31 @@ async function run() {
       });
     });
 
+    // Update a user fraud status
+      app.patch("/users/:userId/fraud", async (req, res) => {
+      const { userId } = req.params;
+
+      if (!ObjectId.isValid(userId)) {
+        return res.status(400).send({ message: "Invalid user ID." });
+      }
+
+      try {
+        const result = await usersCollection.updateOne(
+          { _id: new ObjectId(userId) },
+          { $set: { isFraud: true } }
+        );
+        if (result.modifiedCount > 0) {
+          res
+            .status(200)
+            .send({ message: "User marked as fraud successfully." });
+        } else {
+          res.status(404).send({ message: "User not found." });
+        }
+      } catch (error) {
+        res.status(500).send({ message: "Internal server error.", error });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
