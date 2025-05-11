@@ -79,6 +79,41 @@ async function run() {
       next();
     };
 
+    // Get all users
+    app.get("/users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Post a user
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      user.role = user.role || "user";
+
+      const query = { email: user.email };
+      const existingUser = await usersCollection.findOne(query);
+
+      if (existingUser) {
+        return res.send({ message: "User already exists", insertedID: null });
+      }
+
+      const { photoURL } = user;
+      if (photoURL) {
+        user.photoURL = photoURL;
+      }
+
+      const result = await usersCollection.insertOne(user);
+
+      if (result.insertedId) {
+        res.send({
+          message: "User successfully registered",
+          insertedID: result.insertedId,
+        });
+      } else {
+        res.status(500).send({ message: "Failed to register user" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
