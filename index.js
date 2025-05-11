@@ -131,6 +131,29 @@ async function run() {
       res.status(400).send({ error: "Email is required" });
     });
 
+    // Update user
+    app.patch("/users/:id/role", (req, res) => {
+      const userId = req.params.id;
+      const { role } = req.body;
+
+      if (!role) {
+        return res.status(400).send({ message: "Role is required" });
+      }
+
+      const filter = { _id: new ObjectId(userId) };
+      const updateDoc = { $set: { role } };
+
+      usersCollection.updateOne(filter, updateDoc).then((result) => {
+        if (result.modifiedCount > 0) {
+          res.send({ message: "User role updated successfully" });
+        } else {
+          res
+            .status(404)
+            .send({ message: "User not found or role already set" });
+        }
+      });
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
