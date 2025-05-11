@@ -208,6 +208,79 @@ async function run() {
       }
     });
 
+    // Add new property
+    app.post("/properties", async (req, res) => {
+      const propertyData = req.body;
+      const verificationStatus = "pending";
+
+      // Add the property to the database
+      const result = await propertiesCollection.insertOne({
+        ...propertyData,
+        verificationStatus,
+      });
+
+      if (result.insertedId) {
+        res.send({
+          message: "Property added successfully",
+          insertedID: result.insertedId,
+        });
+      } else {
+        res.status(500).send({ message: "Failed to add property" });
+      }
+    });
+
+    // Update property
+    app.patch("/properties/:id", verifyToken, async (req, res) => {
+      const { id } = req.params;
+      let updatedPropertyData = req.body;
+
+      // Exclude the _id field from the update data if it exists
+      delete updatedPropertyData._id;
+
+      try {
+        const result = await propertiesCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: updatedPropertyData }
+        );
+
+        if (result.modifiedCount > 0) {
+          res.send({ message: "Property updated successfully" });
+        } else {
+          res
+            .status(404)
+            .send({ message: "Property not found or no changes made" });
+        }
+      } catch (error) {
+        res.status(500).send({ message: "Error updating property", error });
+      }
+    });
+
+    // Get all properties (filter by agentEmail if provided)
+    app.get("/properties", async (req, res) => {
+      const { agentEmail } = req.query;
+
+      let query = {};
+      if (agentEmail) {
+        query.agentEmail = agentEmail;
+      }
+
+      const properties = await propertiesCollection.find(query).toArray();
+      res.send(properties);
+    });
+
+    // Get a single property by ID
+    app.get("/properties/:id", async (req, res) => {
+      const { id } = req.params;
+      const property = await propertiesCollection.findOne({
+        _id: new ObjectId(id),
+      });
+      if (property) {
+        res.send(property);
+      } else {
+        res.status(404).send({ message: "Property not found" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
