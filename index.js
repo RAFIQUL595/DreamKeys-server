@@ -114,6 +114,23 @@ async function run() {
       }
     });
 
+    // Get user by role
+    app.get("/users/role", async (req, res) => {
+      const email = req.query.email;
+      const user = await usersCollection.findOne({ email });
+      res.send({ role: user?.role || "user" });
+    });
+
+    // Get user by email
+    app.get("/users", async (req, res) => {
+      const email = req.query.email;
+      if (email) {
+        const user = await usersCollection.findOne({ email });
+        return res.send(user || {});
+      }
+      res.status(400).send({ error: "Email is required" });
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
