@@ -170,7 +170,7 @@ async function run() {
     });
 
     // Update a user fraud status
-      app.patch("/users/:userId/fraud", async (req, res) => {
+    app.patch("/users/:userId/fraud", async (req, res) => {
       const { userId } = req.params;
 
       if (!ObjectId.isValid(userId)) {
@@ -191,6 +191,20 @@ async function run() {
         }
       } catch (error) {
         res.status(500).send({ message: "Internal server error.", error });
+      }
+    });
+
+    // Delete Properties by agent ID
+    app.delete("/properties/agent/:userId", async (req, res) => {
+      const { userId } = req.params;
+
+      const result = await propertiesCollection.deleteMany({ agentId: userId });
+      if (result.deletedCount > 0) {
+        res.send({ message: "Agent properties deleted successfully" });
+      } else {
+        res
+          .status(404)
+          .send({ message: "No properties found for the given agent" });
       }
     });
 
