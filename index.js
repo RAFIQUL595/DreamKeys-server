@@ -154,6 +154,21 @@ async function run() {
       });
     });
 
+    // Delete a user
+    app.delete("/users/:id", verifyToken, verifyAdmin, (req, res) => {
+      const userId = req.params.id;
+
+      const filter = { _id: new ObjectId(userId) };
+
+      usersCollection.deleteOne(filter).then((result) => {
+        if (result.deletedCount > 0) {
+          res.send({ message: "User deleted successfully" });
+        } else {
+          res.status(404).send({ message: "User not found" });
+        }
+      });
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
