@@ -555,6 +555,25 @@ async function run() {
       res.send(bidItems);
     });
 
+    // Update bid status
+    app.patch("/bids/:id", verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const updatedBid = await bidsCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { status } }
+      );
+
+      if (updatedBid.modifiedCount === 0) {
+        return res
+          .status(404)
+          .send({ message: "Bid not found or already updated" });
+      }
+
+      res.send({ message: "Bid status updated successfully", updatedBid });
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
