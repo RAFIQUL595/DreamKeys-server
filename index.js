@@ -574,6 +574,43 @@ async function run() {
       res.send({ message: "Bid status updated successfully", updatedBid });
     });
 
+    // Add Review by id
+    app.post("/reviews/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const { text, userId, username, userPhoto, reviewStatus } = req.body;
+
+        if (!text || !userId || !username || !userPhoto) {
+          return res.status(400).json({ message: "Missing review data" });
+        }
+
+        const review = {
+          propertyId: id,
+          text,
+          userId,
+          username,
+          userPhoto,
+          reviewStatus: "pending",
+          createdAt: new Date(),
+        };
+
+        await reviewsCollection.insertOne(review);
+        res.json({ message: "Review submitted successfully" });
+      } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
+    // Get all reviews
+    app.get("/reviews", async (req, res) => {
+      try {
+        const reviews = await reviewsCollection.find().toArray();
+        res.json(reviews);
+      } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
