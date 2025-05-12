@@ -763,6 +763,35 @@ async function run() {
       const paymentResult = await paymentCollection.insertOne(payment);
     });
 
+    // Get all payments by email
+    app.get("/payments/:email", verifyToken, async (req, res) => {
+      const query = { email: req.params.email };
+      if (req.params.email !== req.decoded.email) {
+        return res.status(403).send({ massage: "forbidden access" });
+      }
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Get all payments
+    app.get("/paymentss", async (req, res) => {
+      const result = await paymentCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Get all payments by agentEmail
+    app.get("/payments", async (req, res) => {
+      const { agentEmail } = req.query;
+
+      try {
+        const query = agentEmail ? { agentEmail } : {};
+        const payments = await paymentCollection.find(query).toArray();
+        res.send(payments);
+      } catch (error) {
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
