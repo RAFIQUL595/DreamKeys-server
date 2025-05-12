@@ -394,6 +394,33 @@ async function run() {
       }
     });
 
+    // ! WISHLIST
+    app.get("/wishlists", async (req, res) => {
+      const result = await wishlistCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Add a property to the wishlist
+    app.post("/wishlist", verifyToken, async (req, res) => {
+      const { propertyId } = req.body;
+      const userEmail = req.decoded.email;
+
+      const property = await propertiesCollection.findOne({
+        _id: new ObjectId(propertyId),
+      });
+      delete property._id;
+
+      const wishlistItem = {
+        userEmail,
+        propertyId,
+        addedAt: new Date(),
+        ...property,
+      };
+
+      const result = await wishlistCollection.insertOne(wishlistItem);
+      res.send({ message: "Added to wishlist", result });
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
