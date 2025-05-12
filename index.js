@@ -371,6 +371,29 @@ async function run() {
       }
     );
 
+    // Report a property
+    app.post("/properties/:id/report", async (req, res) => {
+      const { id } = req.params;
+      const { reporterName, reporterEmail, reportDescription } = req.body;
+
+      const reportData = {
+        propertyId: new ObjectId(id),
+        reporterName,
+        reporterEmail,
+        reportDescription,
+      };
+
+      try {
+        const result = await reportedPropertiesCollection.insertOne(reportData);
+        res.send({
+          message: "Property reported successfully",
+          reportId: result.insertedId,
+        });
+      } catch (error) {
+        res.status(500).send({ message: "Failed to report property", error });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
