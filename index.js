@@ -341,6 +341,36 @@ async function run() {
       }
     });
 
+    // Remove property from being advertised
+    app.patch(
+      "/properties/:id/remove-advertise",
+      verifyToken,
+      async (req, res) => {
+        const { id } = req.params;
+
+        try {
+          const result = await propertiesCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { isAdvertised: false } }
+          );
+
+          if (result.modifiedCount > 0) {
+            res.send({
+              message: "Property advertisement removed successfully",
+            });
+          } else {
+            res
+              .status(404)
+              .send({ message: "Property not found or not advertised" });
+          }
+        } catch (error) {
+          res
+            .status(500)
+            .send({ message: "Error removing advertisement", error });
+        }
+      }
+    );
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
