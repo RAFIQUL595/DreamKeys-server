@@ -421,6 +421,28 @@ async function run() {
       res.send({ message: "Added to wishlist", result });
     });
 
+    // Fetch all wishlist items for a user
+    app.get("/wishlist", verifyToken, async (req, res) => {
+      const userEmail = req.decoded.email;
+
+      const wishlistItems = await wishlistCollection
+        .find({ userEmail })
+        .toArray();
+
+      res.send(wishlistItems);
+    });
+
+    // Get a single wishlist by ID
+    app.get("/wishlist/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const userEmail = req.decoded.email;
+      const wishlistItems = await wishlistCollection.findOne({
+        _id: new ObjectId(id),
+        userEmail,
+      });
+      res.send(wishlistItems);
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
