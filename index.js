@@ -459,7 +459,45 @@ async function run() {
         res.status(404).send({ message: "Property not found in wishlist" });
       }
     });
-    
+
+    // Get all bids
+    app.get("/bidss", async (req, res) => {
+      const result = await bidsCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Add a bid
+    app.post("/bids", verifyToken, async (req, res) => {
+      const {
+        propertyId,
+        propertyTitle,
+        agentEmail,
+        offerAmount,
+        buyerName,
+        buyingDate,
+      } = req.body;
+
+      const userEmail = req.decoded.email;
+
+      const bidItem = {
+        propertyId,
+        propertyTitle,
+        agentEmail,
+        offerAmount,
+        buyingDate,
+        buyerName,
+        buyerEmail: userEmail,
+        status: "pending",
+      };
+
+      const bid = await bidsCollection.insertOne(bidItem);
+      if (!bid) {
+        return res.status(404).send({ message: "bid not found" });
+      }
+
+      res.send({ message: "Bid Added Successfully", bid });
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
