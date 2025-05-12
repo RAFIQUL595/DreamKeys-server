@@ -281,6 +281,29 @@ async function run() {
       }
     });
 
+     // Admin verifies property
+    app.patch("/properties/:id/verify", verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const { verificationStatus } = req.body;
+
+      if (!["verified", "rejected"].includes(verificationStatus)) {
+        return res.status(400).send({ message: "Invalid verification status" });
+      }
+
+      const result = await propertiesCollection.updateOne(
+        { _id: new ObjectId(id) },
+        { $set: { verificationStatus } }
+      );
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Property verification status updated" });
+      } else {
+        res
+          .status(404)
+          .send({ message: "Property not found or already updated" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
