@@ -724,6 +724,39 @@ async function run() {
       }
     });
 
+    // add to update bid status
+    app.post("/update-bid-status", async (req, res) => {
+      const { bidId, transactionId } = req.body;
+
+      try {
+        await BidModel.updateOne(
+          { _id: bidId },
+          { $set: { status: "bought", transactionId } }
+        );
+        res.send("Status updated successfully");
+      } catch (error) {
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
+    // ! PAyment Intend // Payment intend
+
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+
+      const amount = parseInt(price * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
