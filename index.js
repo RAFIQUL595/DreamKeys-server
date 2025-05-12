@@ -645,6 +645,39 @@ async function run() {
       }
     });
 
+    // Read all reviews by a specific user
+    app.get("/reviews/user/:userId", async (req, res) => {
+      const userId = req.params.userId;
+
+      try {
+        const reviews = await reviewsCollection.find({ userId }).toArray();
+        res.json(reviews);
+      } catch (error) {
+        res.status(500).json({ message: "Error fetching user reviews", error });
+      }
+    });
+
+    // Delete a review by reviewId
+    app.delete("/reviews/:reviewId", async (req, res) => {
+      const { reviewId } = req.params;
+
+      try {
+        // Delete the review using the reviewId
+        const result = await reviewsCollection.deleteOne({
+          _id: new ObjectId(reviewId),
+        });
+
+        if (result.deletedCount === 0) {
+          return res.status(404).json({ message: "Review not found" });
+        }
+
+        // Return success response if the review is deleted
+        res.status(200).json({ message: "Review deleted successfully" });
+      } catch (error) {
+        res.status(500).json({ message: "Internal Server Error", error });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
