@@ -694,6 +694,36 @@ async function run() {
       }
     });
 
+    // Stripe payment intent
+    app.post("/create-checkout-session", async (req, res) => {
+      const { amount } = req.body;
+
+      try {
+        const session = await stripe.checkout.sessions.create({
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: "Property Purchase",
+                },
+                unit_amount: amount * 100,
+              },
+              quantity: 1,
+            },
+          ],
+          mode: "payment",
+          success_url: `${YOUR_FRONTEND_URL}/payment-success`,
+          cancel_url: `${YOUR_FRONTEND_URL}/payment-cancel`,
+        });
+
+        res.json({ sessionId: session.id });
+      } catch (error) {
+        res.status(500).send("Internal Server Error");
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
