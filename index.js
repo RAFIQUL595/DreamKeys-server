@@ -498,6 +498,29 @@ async function run() {
       res.send({ message: "Bid Added Successfully", bid });
     });
 
+    // Get all bids for a user
+    app.get("/bids/:email", async (req, res) => {
+      const email = req.params.email;
+      const bids = await bidsCollection.find({ buyerEmail: email }).toArray();
+      const bidItems = await Promise.all(
+        bids.map(async (bid) => {
+          const id = bid.propertyId;
+          const propertyItem = await propertiesCollection.findOne({
+            _id: new ObjectId(id),
+          });
+          return {
+            ...propertyItem,
+            offerAmount: bid.offerAmount,
+            offerStatus: bid.status,
+            _id: new ObjectId(bid._id),
+            propertyId: bid.propertyId,
+          };
+        })
+      );
+
+      res.send(bidItems);
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
