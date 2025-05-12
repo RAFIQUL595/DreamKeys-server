@@ -678,6 +678,22 @@ async function run() {
       }
     });
 
+    // Fetch latest 3 reviews for a specific property
+    app.get("/reviews/:id", async (req, res) => {
+      const propertyId = req.params.id;
+
+      try {
+        const reviews = await reviewsCollection
+          .find({ propertyId })
+          .sort({ createdAt: -1 })
+          .limit(3)
+          .toArray();
+        res.json(reviews);
+      } catch (error) {
+        res.status(500).json({ message: "Error fetching reviews", error });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
