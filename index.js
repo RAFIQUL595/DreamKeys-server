@@ -521,6 +521,40 @@ async function run() {
       res.send(bidItems);
     });
 
+    // Get all bid by id
+    app.get("/get-bid/:id", async (req, res) => {
+      const id = req.params.id;
+      const bids = await bidsCollection.findOne({ _id: new ObjectId(id) });
+      res.send(bids);
+    });
+
+    // Get all bids for an agent
+    app.get("/agentBids/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const bids = await bidsCollection.find({ agentEmail: email }).toArray();
+
+      const bidItems = await Promise.all(
+        bids.map(async (bid) => {
+          const id = bid.propertyId;
+          const propertyItem = await propertiesCollection.findOne({
+            _id: new ObjectId(id),
+          });
+          return {
+            ...propertyItem,
+            offerAmount: bid.offerAmount,
+            offerStatus: bid.status,
+            _id: new ObjectId(bid._id),
+            propertyId: bid.propertyId,
+            buyingDate: bid.buyingDate,
+            buyerName: bid.buyerName,
+            buyerEmail: bid.buyerEmail,
+          };
+        })
+      );
+
+      res.send(bidItems);
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
