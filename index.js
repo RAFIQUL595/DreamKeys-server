@@ -281,7 +281,7 @@ async function run() {
       }
     });
 
-     // Admin verifies property
+    // Admin verifies property
     app.patch("/properties/:id/verify", verifyToken, async (req, res) => {
       const { id } = req.params;
       const { verificationStatus } = req.body;
@@ -301,6 +301,20 @@ async function run() {
         res
           .status(404)
           .send({ message: "Property not found or already updated" });
+      }
+    });
+
+    // Delete property by ID
+    app.delete("/properties/:id", verifyToken, async (req, res) => {
+      const { id } = req.params;
+      const result = await propertiesCollection.deleteOne({
+        _id: new ObjectId(id),
+      });
+
+      if (result.deletedCount > 0) {
+        res.send({ message: "Property deleted successfully" });
+      } else {
+        res.status(404).send({ message: "Property not found" });
       }
     });
 
