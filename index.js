@@ -318,6 +318,29 @@ async function run() {
       }
     });
 
+    // Update property to be advertised
+    app.patch("/properties/:id/advertise", verifyToken, async (req, res) => {
+      const { id } = req.params;
+
+      const result = await propertiesCollection.updateOne(
+        { _id: new ObjectId(id) },
+        {
+          $set: {
+            isAdvertised: true,
+            updatedAt: new Date(),
+          },
+        }
+      );
+
+      if (result.modifiedCount > 0) {
+        res.send({ message: "Property advertised successfully" });
+      } else {
+        res
+          .status(404)
+          .send({ message: "Property not found or already advertised" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
