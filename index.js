@@ -611,6 +611,40 @@ async function run() {
       }
     });
 
+    // Get all reviews for a specific property by ID
+    app.get("/reviews/:id", async (req, res) => {
+      const propertyId = req.params.id;
+
+      try {
+        const reviews = await reviewsCollection.find({ propertyId }).toArray();
+        res.json(reviews);
+      } catch (error) {
+        res.status(500).json({ message: "Error fetching reviews", error });
+      }
+    });
+
+    // Update review status
+    app.put("/reviews/:id", async (req, res) => {
+      const { id } = req.params;
+      const { reviewStatus } = req.body;
+
+      try {
+        // Update the review status directly using updateOne
+        const result = await reviewsCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { reviewStatus } }
+        );
+
+        if (result.matchedCount === 0) {
+          return res.status(404).json({ message: "Review not found" });
+        }
+
+        res.status(200).json({ message: "Review status updated successfully" });
+      } catch (error) {
+        res.status(500).json({ error: "Internal Server Error" });
+      }
+    });
+
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
