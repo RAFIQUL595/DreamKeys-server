@@ -443,6 +443,23 @@ async function run() {
       res.send(wishlistItems);
     });
 
+    // Remove a property from the wishlist
+    app.delete("/wishlist/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const userEmail = req.decoded.email;
+
+      const result = await wishlistCollection.deleteOne({
+        _id: new ObjectId(id),
+        userEmail,
+      });
+
+      if (result.deletedCount > 0) {
+        res.send({ message: "Property removed from wishlist" });
+      } else {
+        res.status(404).send({ message: "Property not found in wishlist" });
+      }
+    });
+    
     // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
